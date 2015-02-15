@@ -22,6 +22,7 @@ ShuntDiv = (function(){
                 frame.style.left =      0;
                 frame.style.width =     '100%';
                 frame.style.height =    '100%';
+                frame.style['box-sizing'] = 'border-box';
 
                 frameContainer.removeChild(frame);
             }
@@ -40,7 +41,7 @@ ShuntDiv = (function(){
         // Create transitions with triggers
         this._transitions = transitions || [];
         for (var i = this._transitions.length - 1; i >= 0; i--)
-            this._transitions[i].activate(this);
+            this._transitions[i].initialize(this);
     }
 
     // A Transition object describes the relationship between two concrete 
@@ -50,18 +51,18 @@ ShuntDiv = (function(){
     // Example: Transition initialization
     // new ShuntDiv.Transition('intro', 'info', 'exitSlideUp', 'click', {id: 'button-next'})
 
-    var Transition = ShuntDiv.Transition = function(exitFrameId, enterFrameId, transform, trigger, triggerOptions) {
+    var Transition = ShuntDiv.Transition = function(exitFrameId, enterFrameId, transform, trigger, options) {
         this.exitFrameId =      exitFrameId;
         this.enterFrameId =     enterFrameId;
         this.transform =        transform;
         this.trigger =          trigger;
-        this.triggerOptions =   triggerOptions;
+        this.options =   options;
 
         this.triggerElem =      undefined;
         this.callback =         undefined;  
     };
 
-    Transition.prototype.activate = function(context) {
+    Transition.prototype.initialize = function(context) {
         exitFrame = enterFrame = undefined;
 
         for (var i = context._frames.length - 1; i >= 0; i--) {
@@ -81,12 +82,12 @@ ShuntDiv = (function(){
         if (!exitFrame && !enterFrame) return;
         if (!triggerFunc && !transformFunc) return;
 
-        trigger = triggerFunc(context, transformFunc, exitFrame, enterFrame, this.triggerOptions);
+        trigger = triggerFunc(context, transformFunc, exitFrame, enterFrame, this.options);
         this.callback = trigger.elem;
         this.triggerElem = trigger.callback;
     };
 
-    Transition.prototype.deactivate = function() {
+    Transition.prototype.remove = function() {
         if (!this.triggerElem)
             this.triggerElem.removeEventListener(this.trigger, this.callback);
     };
@@ -99,13 +100,13 @@ ShuntDiv = (function(){
 
     var Triggers = ShuntDiv.Triggers = {
         'click': function(context, transformCallback, exitFrame, enterFrame, options) {
-            if (clickElemId = options.id)
+            if (options && (clickElemId = options.id))
                 triggerElem = exitFrame.querySelector('#' + clickElemId);
             else
                 triggerElem = exitFrame;
 
             triggerCallback = function() {
-                transformCallback(context, exitFrame, enterFrame);
+                transformCallback(context, exitFrame, enterFrame, options);
             };
 
             triggerElem.addEventListener('click', triggerCallback);
@@ -127,24 +128,61 @@ ShuntDiv = (function(){
     // the grunt work.
 
     // Example: Transform fucntion signature
-    // myTransform = function(context, exitFrame, enterFrame) { ... };
+    // myTransform = function(context, exitFrame, enterFrame, options) { ... };
 
     var Transforms = ShuntDiv.Transforms = {
-        'exitSlideUp': function(context, exitFrame, enterFrame) {
+        'replace': function(context, exitFrame, enterFrame, options) {
             if (context._transitionLock) return;
             context._transitionLock = true;
 
             exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
 
-            exitFrame.style['-webkit-animation'] = 'slide-up 0.5s ease-in';
-            exitFrame.style['animation'] = 'slide-up 0.5s ease-in';
-
             setTimeout(function(){ 
                 context._transitionLock = false; 
                 exitFrame.parentNode.removeChild(exitFrame); 
-                exitFrame.style['-webkit-animation'] = '';
-                exitFrame.style['animation'] = '';
-            }, 500);
+            }, 10);
+        },
+
+        'enterAnimateCss': function(context, exitFrame, enterFrame, options) {
+            if (context._transitionLock) return;
+            context._transitionLock = true;
+
+            animation_name = options.animation_name || 'fadeIn';
+            animation_time = options.animation_time || 500;
+            animation_function = options.animation_function || 'linear';
+
+            exitFrame.parentNode.appendChild(enterFrame);
+
+            enterFrame.style['-webkit-animation']    = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+            enterFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+
+            setTimeout(function() { 
+                context._transitionLock = false; 
+                exitFrame.parentNode.removeChild(exitFrame); 
+                enterFrame.style['-webkit-animation']    = '';
+                enterFrame.style['animation']            = '';
+            }, animation_time);
+        },
+
+        'exitAnimateCss': function(context, exitFrame, enterFrame, options) {
+            if (context._transitionLock) return;
+            context._transitionLock = true;
+
+            animation_name = options.animation_name || 'fadeIn';
+            animation_time = options.animation_time || 500;
+            animation_function = options.animation_function || 'linear';
+
+            exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
+
+            exitFrame.style['-webkit-animation']    = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+            exitFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+
+            setTimeout(function() { 
+                context._transitionLock = false; 
+                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.style['-webkit-animation']    = '';
+                exitFrame.style['animation']            = '';
+            }, animation_time);
         },
     };
 

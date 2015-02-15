@@ -5,6 +5,10 @@ div#main-content {
     height: 100%;
 }
 
+div.frame {
+    padding: 2em;
+}
+
 div#intro {
     background-color: cyan;
 }
@@ -20,22 +24,4 @@ div#info-2 {
 div#contact {
     background-color: black;
     color: white;
-}
-
-@keyframes slide-up {
-    from {
-        transform: translateY(0%);
-    }
-    to {
-        transform: translateY(-100%);
-    }
-}
-
-@-webkit-keyframes slide-up {
-    from {
-        transform: translateY(0%);
-    }
-    to {
-        transform: translateY(-100%);
-    }
 }
