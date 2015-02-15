@@ -1,7 +1,7 @@
 <html>
     <head>
         <title>ShuntDiv</title>
-        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.2.0/animate.min.css">
+        <link rel="stylesheet" type="text/css" href="https://cdn.rawgit.com/daneden/animate.css/master/animate.css">
         <link rel="stylesheet" type="text/css" href="test.css">
     </head>
     <body>
@@ -10,6 +10,8 @@
                 <h1>Intro</h1>
                 <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae metus et nisi elementum lobortis. Praesent nec suscipit urna, quis congue odio. Mauris facilisis a odio sit amet consectetur. Mauris sit amet ante sed arcu consequat porttitor. Aenean placerat, enim eu ullamcorper euismod, nunc est luctus dui, in ultrices massa mauris sit amet risus. Vivamus eleifend, nulla nec blandit ultricies, felis risus bibendum lorem, vel tempor tortor nulla vel massa. Integer at magna auctor lorem pharetra pharetra sed eu sapien. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent volutpat ante ac urna viverra, in placerat augue eleifend. Sed et molestie diam, quis tempus tellus. Etiam efficitur risus leo, quis ultrices nisi semper in. Vivamus tincidunt nibh augue. Fusce scelerisque nisl orci, eget congue nulla vehicula vitae. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac lacus eu augue efficitur tempor.
+                    <br/>
+                    Press space or click anywhere.
                 </p>
             </div>
 
@@ -17,6 +19,8 @@
                 <h1>Info 1</h1>
                 <p>
                     Nunc aliquet dignissim tincidunt. Proin sed ipsum augue. Duis volutpat augue libero, vel fermentum dui malesuada vulputate. Praesent mattis justo ut est placerat vestibulum. Fusce posuere odio quis euismod tincidunt. Quisque urna ligula, consectetur vehicula fermentum at, laoreet id mauris. Ut sed velit volutpat, ultrices diam ut, lobortis ligula. Praesent eleifend tortor dui, sed scelerisque tellus tincidunt eget. Ut tortor mi, fringilla in mi a, suscipit laoreet nisi.
+                    <br/>
+                    Click anywhere.
                 </p>
             </div>
 
@@ -24,6 +28,8 @@
                 <h1>Info 2</h1>
                 <p>
                     Quisque pulvinar ipsum eu sem imperdiet, id laoreet tortor porta. Sed sit amet lectus sed est dapibus mattis quis vel quam. Proin convallis viverra hendrerit. Phasellus quis porttitor velit. Sed faucibus nibh sagittis nulla tempus egestas vitae non justo. Maecenas gravida vehicula sem, aliquet vulputate eros aliquam vel. Aliquam malesuada posuere elementum. Praesent velit lorem, aliquet ac scelerisque et, pharetra sit amet velit.
+                    <br/>
+                    Click somewhere.
                 </p>
             </div>
 
@@ -31,6 +37,8 @@
                 <h1>Contact Us</h1>
                 <p>
                     Mauris pharetra urna venenatis odio eleifend, tincidunt egestas est convallis. Nullam aliquet leo ut accumsan dignissim. Nullam non imperdiet odio. Morbi ut efficitur augue, eu sagittis tellus. Curabitur vitae ex dapibus, iaculis orci id, congue turpis. Suspendisse ut porta urna. Integer efficitur sit amet felis volutpat vestibulum. Ut et ultricies velit. Duis in augue orci.
+                    <br/>
+                    Press the A key.
                 </p>
             </div>
         </div>
@@ -38,10 +46,21 @@
         <script type="text/javascript" src="shuntdiv.js"></script>
         <script type="text/javascript">
             testShunt = new ShuntDiv(document.getElementById('main-content'), [
-                new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'click', {animation_name: 'fadeOut',}),
-                new ShuntDiv.Transition('info-1', 'info-2' , 'exitAnimateCss', 'click', {animation_name: 'fadeOutLeft',}),
-                new ShuntDiv.Transition('info-2', 'contact' , 'enterAnimateCss', 'click', {animation_name: 'lightSpeedIn',}),
-                new ShuntDiv.Transition('contact', 'info-1' , 'replace', 'click'),
+                new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'click'),
+
+                new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'keypress', {key: 32}),
+
+                new ShuntDiv.Transition('info-1', 'info-2' , 'enterAnimateCss', 'click', {
+                    animation_name: 'lightSpeedIn',
+                }),
+
+                new ShuntDiv.Transition('info-2', 'contact' , 'dualAnimateCss', 'click', {
+                    exit_animation_name: 'slideOutUp', 
+                    enter_animation_name: 'slideInUp',
+                }),
+
+                new ShuntDiv.Transition('contact', 'info-1' , 'replace', 'keypress', {key: 'A'}),
+
             ], {
                 default: 'intro',
             });
