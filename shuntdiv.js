@@ -142,8 +142,6 @@ ShuntDiv = (function(){
 
         '_keypressfactory': function(keyCode, context, transformCallback, exitFrame, enterFrame, options) {
             return function(e) {
-                console.log(exitFrame, e.keyCode, keyCode);
-
                 if ((e.keyCode == keyCode) && (context._stagedFrame == exitFrame)) {
                     transformCallback(context, exitFrame, enterFrame, options);
                     context._stagedFrame = enterFrame;
