@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>ShuntDiv</title>
+        <link rel="stylesheet" type="text/css" href="test.css">
+    </head>
+    <body>
+        <div id="main-content">
+            <div id="intro" shunt-frame>
+                Intro
+            </div>
+
+            <div id="info-1" shunt-frame>
+                Info 1
+            </div>
+
+            <div id="info-2" shunt-frame>
+                Info 2
+            </div>
+
+            <div id="contact" shunt-frame>
+                Contact Us
+            </div>
+        </div>
+
+        <script type="text/javascript" src="shuntdiv.js"></script>
+        <script type="text/javascript">
+            testShunt = new ShuntDiv(document.getElementById('main-content'), [
+                new ShuntDiv.Transition('intro', 'info-1' , 'exitSlideUp', 'click', {}),
+                new ShuntDiv.Transition('info-1', 'info-2' , 'exitSlideUp', 'click', {}),
+                new ShuntDiv.Transition('info-2', 'contact' , 'exitSlideUp', 'click', {}),
+            ], {
+                default: 'intro',
+            });
+        </script>
+    </body>
+</html>

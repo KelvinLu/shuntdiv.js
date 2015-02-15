@@ -1,6 +1,4 @@
-ShuntDiv = {};
-
-(function(ShuntDiv){
+ShuntDiv = (function(){
     ShuntDiv = function(frameContainer, transitions, options) {
         // Load options
         this.options = {
@@ -13,9 +11,10 @@ ShuntDiv = {};
         // Collect frames, set initial CSS, and remove from DOM
         this._container = frameContainer;
         this._frames = [];
+        this._transitionLock = false;
 
         for (var i = frameContainer.children.length - 1; i >= 0; i--)
-            if ((frame = frameContainer.children[i]).hasAttribute('frame')) {
+            if ((frame = frameContainer.children[i]).hasAttribute('shunt-frame')) {
                 this._frames.push(frame);
 
                 frame.style.position =  'absolute';
@@ -29,6 +28,7 @@ ShuntDiv = {};
 
         // Set container inital CSS
         frameContainer.style.position = 'relative';
+        frameContainer.style.overflow = 'hidden';
 
         // Attach default frame
         if (this._frames)
@@ -40,9 +40,7 @@ ShuntDiv = {};
         // Create transitions with triggers
         this._transitions = transitions || [];
         for (var i = this._transitions.length - 1; i >= 0; i--)
-            this._transitions[i].activate();
-
-
+            this._transitions[i].activate(this);
     }
 
     // A Transition object describes the relationship between two concrete 
@@ -53,21 +51,21 @@ ShuntDiv = {};
     // new ShuntDiv.Transition('intro', 'info', 'exitSlideUp', 'click', {id: 'button-next'})
 
     var Transition = ShuntDiv.Transition = function(exitFrameId, enterFrameId, transform, trigger, triggerOptions) {
-      this.exitFrameId =    exitFrameId;
-      this.enterFrameId =   enterFrameId;
-      this.transform =      transform;
-      this.trigger =        trigger;
-      this.triggerOptions = triggerOptions;
+        this.exitFrameId =      exitFrameId;
+        this.enterFrameId =     enterFrameId;
+        this.transform =        transform;
+        this.trigger =          trigger;
+        this.triggerOptions =   triggerOptions;
 
-      this.triggerElem =    undefined;
-      this.callback =       undefined;
+        this.triggerElem =      undefined;
+        this.callback =         undefined;  
     };
 
-    Transition.activate = function() {
+    Transition.prototype.activate = function(context) {
         exitFrame = enterFrame = undefined;
 
-        for (var i = this._frames.length - 1; i >= 0; i--) {
-            frame = this._frames[i];
+        for (var i = context._frames.length - 1; i >= 0; i--) {
+            frame = context._frames[i];
             frameId = frame.getAttribute('id');
 
             if (frameId === this.exitFrameId) {
@@ -83,12 +81,12 @@ ShuntDiv = {};
         if (!exitFrame && !enterFrame) return;
         if (!triggerFunc && !transformFunc) return;
 
-        trigger = triggerFunc(transformFunc, exitFrame, enterFrame, this.triggerOptions);
+        trigger = triggerFunc(context, transformFunc, exitFrame, enterFrame, this.triggerOptions);
         this.callback = trigger.elem;
         this.triggerElem = trigger.callback;
     };
 
-    Transition.deactivate = function() {
+    Transition.prototype.deactivate = function() {
         if (!this.triggerElem)
             this.triggerElem.removeEventListener(this.trigger, this.callback);
     };
@@ -97,17 +95,17 @@ ShuntDiv = {};
     // assigns a Transform callback.
 
     // Example: Trigger function signature
-    // myTrigger = function(transformCallback, exitFrame, enterFrame, [eventArgs]*) { ... };
+    // myTrigger = function(context, transformCallback, exitFrame, enterFrame, [eventArgs]*) { ... };
 
     var Triggers = ShuntDiv.Triggers = {
-        'click': function(transformCallback, exitFrame, enterFrame, options) {
+        'click': function(context, transformCallback, exitFrame, enterFrame, options) {
             if (clickElemId = options.id)
                 triggerElem = exitFrame.querySelector('#' + clickElemId);
-            
-            triggerElem = triggerElem || exitFrame;
+            else
+                triggerElem = exitFrame;
 
             triggerCallback = function() {
-                transformCallback(exitFrame, enterFrame);
+                transformCallback(context, exitFrame, enterFrame);
             };
 
             triggerElem.addEventListener('click', triggerCallback);
@@ -118,7 +116,7 @@ ShuntDiv = {};
             };
         },
 
-        'keypress': function(transformCallback, exitFrame, enterFrame, options) {
+        'keypress': function(context, transformCallback, exitFrame, enterFrame, options) {
             
         },
     };
@@ -129,12 +127,26 @@ ShuntDiv = {};
     // the grunt work.
 
     // Example: Transform fucntion signature
-    // myTransform = function(exitFrame, enterFrame) { ... };
+    // myTransform = function(context, exitFrame, enterFrame) { ... };
 
     var Transforms = ShuntDiv.Transforms = {
-        'exitSlideUp': function(exitFrame, enterFrame) {
+        'exitSlideUp': function(context, exitFrame, enterFrame) {
+            if (context._transitionLock) return;
+            context._transitionLock = true;
 
+            exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
+
+            exitFrame.style['-webkit-animation'] = 'slide-up 0.5s ease-in';
+            exitFrame.style['animation'] = 'slide-up 0.5s ease-in';
+
+            setTimeout(function(){ 
+                context._transitionLock = false; 
+                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.style['-webkit-animation'] = '';
+                exitFrame.style['animation'] = '';
+            }, 500);
         },
     };
 
-})(ShuntDiv);
+    return ShuntDiv;
+})();
