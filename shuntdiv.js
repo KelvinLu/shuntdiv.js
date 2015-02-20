@@ -67,8 +67,30 @@ ShuntDiv = (function(){
     };
 
     ShuntDiv.prototype.addFrame = function(elem) {
-        if (this._frames.indexOf(elem) === -1)
-            this._frames.push(elem);
+        if (typeof elem == 'string' || elem instanceof String)
+            frame = this.addFrameById(elem);
+        else
+            frame = this.addFrameByElem(elem);
+
+        if (!frame) return;
+
+        frame.style.position =  'absolute';
+        frame.style.top =       0;
+        frame.style.left =      0;
+        frame.style.width =     '100%';
+        frame.style.height =    '100%';
+        frame.style['box-sizing'] = 'border-box';
+    };
+
+    ShuntDiv.prototype.addFrameByElem = function(frameElem) {
+        if (this._frames.indexOf(frameElem) === -1) 
+            return this._frames.push(frameElem);
+    };
+
+    ShuntDiv.prototype.addFrameById = function(frameId) {
+        for (var i = this._frameContainer.children.length - 1; i >= 0; i--)
+            if (((frame = this._frameContainer.children[i]).hasAttribute('shunt-frame')) && (this._frames.indexOf(frame) === -1))
+                return this._frames.push(this._children[i]);
     };
 
     ShuntDiv.prototype.removeFrame = function(elem) {
