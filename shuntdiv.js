@@ -89,27 +89,78 @@ ShuntDiv = (function(){
 
     ShuntDiv.prototype.addFrameById = function(frameId) {
         for (var i = this._frameContainer.children.length - 1; i >= 0; i--)
-            if (((frame = this._frameContainer.children[i]).hasAttribute('shunt-frame')) && (this._frames.indexOf(frame) === -1))
+            if (((frame = this._frameContainer.children[i]).getAttribute('id') === frameId) && (this._frames.indexOf(frame) === -1))
                 return this._frames.push(this._children[i]);
     };
 
     ShuntDiv.prototype.removeFrame = function(elem) {
         if (typeof elem == 'string' || elem instanceof String)
-            this.removeFrameById(elem);
+            frame = this.removeFrameById(elem);
         else
-            this.removeFrameByElem(elem);
+            frame = this.removeFrameByElem(elem);
+
+        if (!frame) return;
+
+        if (this.getStagedFrame() == frame) {
+            this.setStagedFrame(undefined);
+            this._container.removeChild(frame);
+            this.removeTransition(frame.getAttribute('id'));
+        }
+
+        return frame;
     };
 
     ShuntDiv.prototype.removeFrameByElem = function(frameElem) {
         for (var i = this._frames.length - 1; i >= 0; i--)
             if (this._frames[i] === frameElem)
-                this._frames.splice(i, 1);
+                return this._frames.splice(i, 1)[0];
     };
 
     ShuntDiv.prototype.removeFrameById = function(frameId) {
         for (var i = this._frames.length - 1; i >= 0; i--)
-            if (this._frames[i].getAttribute('id') === frameElem)
-                this._frames.splice(i, 1);  
+            if (this._frames[i].getAttribute('id') === frameId)
+                return this._frames.splice(i, 1)[0]; 
+    };
+
+    ShuntDiv.prototype.transitionLock = function() {
+        this._transitionLock = true;
+    };
+
+    ShuntDiv.prototype.transitionUnlock = function() {
+        this._transitionLock = false;
+    };
+
+    ShuntDiv.prototype.getStagedFrame = function() {
+        return this._stagedFrame;
+    };
+
+    ShuntDiv.prototype.setStagedFrame = function(frame) {
+        this._stagedFrame = frame;
+    };
+
+    ShuntDiv.prototype.showFrame = function(elem) {
+        if (typeof elem == 'string' || elem instanceof String)
+            this.showFrameById(elem);
+        else
+            this.showFrameByElem(elem);
+    };
+
+    ShuntDiv.prototype.showFrameByElem = function(frameElem) {
+        for (var i = this._frames.length - 1; i >= 0; i--)
+            if ((frame = this._frames[i]) === frameElem) {
+                this._container.removeChild(this.getStagedFrame());
+                this.setStagedFrame(frame);
+                this._container.appendChild(frame);
+            }    
+        };
+
+    ShuntDiv.prototype.showFrameById = function(frameId) {
+        for (var i = this._frames.length - 1; i >= 0; i--)
+            if ((frame = this._frames[i]).getAttribute('id') === frameId) {
+                this._container.removeChild(this.getStagedFrame());
+                this.setStagedFrame(frame);
+                this._container.appendChild(frame);
+            }
     };
 
     // A Transition object describes the relationship between two concrete 
@@ -174,7 +225,7 @@ ShuntDiv = (function(){
                 triggerElem = exitFrame;
 
             triggerCallback = function() {
-                if (context._stagedFrame == exitFrame)
+                if (context.getStagedFrame() == exitFrame)
                     transformCallback(context, exitFrame, enterFrame, options);
             };
 
@@ -207,7 +258,7 @@ ShuntDiv = (function(){
 
         '_keypressfactory': function(keyCode, context, transformCallback, exitFrame, enterFrame, options) {
             return function(e) {
-                if ((e.keyCode == keyCode) && (context._stagedFrame == exitFrame)) {
+                if ((e.keyCode == keyCode) && (context.getStagedFrame() == exitFrame)) {
                     transformCallback(context, exitFrame, enterFrame, options);
                 }
             };
@@ -225,20 +276,20 @@ ShuntDiv = (function(){
     var Transforms = ShuntDiv.Transforms = {
         'replace': function(context, exitFrame, enterFrame, options) {
             if (context._transitionLock) return;
-            context._transitionLock = true;
+            context.transitionLock();
 
             exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
 
             setTimeout(function(){ 
-                context._transitionLock = false;
-                context._stagedFrame = enterFrame;
+                context.transitionUnlock();
+                context.setStagedFrame(enterFrame);
                 exitFrame.parentNode.removeChild(exitFrame); 
             }, 10);
         },
 
         'enterAnimateCss': function(context, exitFrame, enterFrame, options) {
             if (context._transitionLock) return;
-            context._transitionLock = true;
+            context.transitionLock();
 
             animation_name = (options) ? options.animation_name || 'fadeIn' : 'fadeIn';
             animation_time = (options) ? options.animation_time || 500 : 500;
@@ -250,8 +301,8 @@ ShuntDiv = (function(){
             enterFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
             setTimeout(function() { 
-                context._transitionLock = false;
-                context._stagedFrame = enterFrame;
+                context.transitionUnlock();
+                context.setStagedFrame(enterFrame);
                 exitFrame.parentNode.removeChild(exitFrame); 
                 enterFrame.style['-webkit-animation']    = '';
                 enterFrame.style['animation']            = '';
@@ -260,7 +311,7 @@ ShuntDiv = (function(){
 
         'exitAnimateCss': function(context, exitFrame, enterFrame, options) {
             if (context._transitionLock) return;
-            context._transitionLock = true;
+            context.transitionLock();
 
             animation_name = (options) ? options.animation_name || 'fadeOut' : 'fadeOut';
             animation_time = (options) ? options.animation_time || 500 : 500;
@@ -272,8 +323,8 @@ ShuntDiv = (function(){
             exitFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
             setTimeout(function() { 
-                context._transitionLock = false;
-                context._stagedFrame = enterFrame;
+                context.transitionUnlock();
+                context.setStagedFrame(enterFrame);
                 exitFrame.parentNode.removeChild(exitFrame); 
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
@@ -282,7 +333,7 @@ ShuntDiv = (function(){
 
         'dualAnimateCss': function(context, exitFrame, enterFrame, options) {
             if (context._transitionLock) return;
-            context._transitionLock = true;
+            context.transitionLock();
 
             exit_animation_name = (options) ? options.exit_animation_name || 'fadeIn' : 'fadeIn';
             exit_animation_time = (options) ? options.exit_animation_time || 500 : 500;
@@ -305,8 +356,8 @@ ShuntDiv = (function(){
             enterFrame.style['animation']           = enter_animation_name + ' ' + enter_animation_time.toString() + 'ms ' + enter_animation_function;
 
             setTimeout(function() { 
-                context._transitionLock = false;
-                context._stagedFrame = enterFrame;
+                context.transitionUnlock();
+                context.setStagedFrame(enterFrame);
                 exitFrame.parentNode.removeChild(exitFrame); 
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
