@@ -51,19 +51,20 @@
                 new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'keypress', {key: 32}),
 
                 new ShuntDiv.Transition('info-1', 'info-2' , 'enterAnimateCss', 'click', {
-                    animation_name: 'lightSpeedIn',
+                    animation_name: 'fadeInUp',
+                    animation_time: 1000,
                 }),
 
                 new ShuntDiv.Transition('info-2', 'contact' , 'dualAnimateCss', 'click', {
                     exit_animation_name: 'slideOutUp', 
                     enter_animation_name: 'slideInUp',
+                    enter_above: true,
                 }),
-
-                new ShuntDiv.Transition('contact', 'info-1' , 'replace', 'keypress', {key: 'A'}),
-
             ], {
                 default: 'intro',
             });
+
+            testShunt.addTransition(new ShuntDiv.Transition('contact', 'info-1' , 'replace', 'keypress', {key: 'a'}));
         </script>
     </body>
 </html>

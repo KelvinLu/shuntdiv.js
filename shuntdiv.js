@@ -42,10 +42,53 @@ ShuntDiv = (function(){
         }
 
         // Create transitions with triggers
-        this._transitions = transitions || [];
-        for (var i = this._transitions.length - 1; i >= 0; i--)
-            this._transitions[i].initialize(this);
+        this._transitions = [];
+        for (var i = transitions.length - 1; i >= 0; i--)
+            this.addTransition(transitions[i]);
     }
+
+    ShuntDiv.prototype.addTransition = function(transitionObj) {
+        if (this._transitions.indexOf(transitionObj) === -1)
+        {
+            this._transitions.push(transitionObj);
+            transitionObj.initialize(this);
+        }
+    };
+
+    ShuntDiv.prototype.removeTransition = function(frameId) {
+        for (var i = this._transitions.length - 1; i >= 0; i--) {
+            // Removing list elements from the end of the list? Smart.
+            transitionObj = this._transitions[i];
+            if ((transitionObj.exitFrameId === frameId) || (transitionObj.enterFrameId === frameId)) {
+                transitionObj.remove();
+                this._transitions.splice(i, 1);
+            }
+        };
+    };
+
+    ShuntDiv.prototype.addFrame = function(elem) {
+        if (this._frames.indexOf(elem) === -1)
+            this._frames.push(elem);
+    };
+
+    ShuntDiv.prototype.removeFrame = function(elem) {
+        if (typeof elem == 'string' || elem instanceof String)
+            this.removeFrameById(elem);
+        else
+            this.removeFrameByElem(elem);
+    };
+
+    ShuntDiv.prototype.removeFrameByElem = function(frameElem) {
+        for (var i = this._frames.length - 1; i >= 0; i--)
+            if (this._frames[i] === frameElem)
+                this._frames.splice(i, 1);
+    };
+
+    ShuntDiv.prototype.removeFrameById = function(frameId) {
+        for (var i = this._frames.length - 1; i >= 0; i--)
+            if (this._frames[i].getAttribute('id') === frameElem)
+                this._frames.splice(i, 1);  
+    };
 
     // A Transition object describes the relationship between two concrete 
     // frames, their Transform function, and a Trigger function for some
@@ -128,7 +171,7 @@ ShuntDiv = (function(){
                 if (Number.isInteger(key))
                     keyCode = key;
                 else if (typeof key == 'string' || key instanceof String)
-                    keyCode = key.charCodeAt(0);
+                    keyCode = key.toUpperCase().charCodeAt(0);
 
             triggerCallback = ShuntDiv.Triggers._keypressfactory(keyCode, context, transformCallback, exitFrame, enterFrame, options);
 
