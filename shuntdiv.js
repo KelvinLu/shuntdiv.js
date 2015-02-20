@@ -152,8 +152,8 @@ ShuntDiv = (function(){
                 triggerElem = exitFrame;
 
             triggerCallback = function() {
-                transformCallback(context, exitFrame, enterFrame, options);
-                context._stagedFrame = enterFrame;
+                if (context._stagedFrame == exitFrame)
+                    transformCallback(context, exitFrame, enterFrame, options);
             };
 
             triggerElem.addEventListener('click', triggerCallback);
@@ -187,7 +187,6 @@ ShuntDiv = (function(){
             return function(e) {
                 if ((e.keyCode == keyCode) && (context._stagedFrame == exitFrame)) {
                     transformCallback(context, exitFrame, enterFrame, options);
-                    context._stagedFrame = enterFrame;
                 }
             };
         },
@@ -209,7 +208,8 @@ ShuntDiv = (function(){
             exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
 
             setTimeout(function(){ 
-                context._transitionLock = false; 
+                context._transitionLock = false;
+                context._stagedFrame = enterFrame;
                 exitFrame.parentNode.removeChild(exitFrame); 
             }, 10);
         },
@@ -228,7 +228,8 @@ ShuntDiv = (function(){
             enterFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
             setTimeout(function() { 
-                context._transitionLock = false; 
+                context._transitionLock = false;
+                context._stagedFrame = enterFrame;
                 exitFrame.parentNode.removeChild(exitFrame); 
                 enterFrame.style['-webkit-animation']    = '';
                 enterFrame.style['animation']            = '';
@@ -249,7 +250,8 @@ ShuntDiv = (function(){
             exitFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
             setTimeout(function() { 
-                context._transitionLock = false; 
+                context._transitionLock = false;
+                context._stagedFrame = enterFrame;
                 exitFrame.parentNode.removeChild(exitFrame); 
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
@@ -281,13 +283,14 @@ ShuntDiv = (function(){
             enterFrame.style['animation']           = enter_animation_name + ' ' + enter_animation_time.toString() + 'ms ' + enter_animation_function;
 
             setTimeout(function() { 
-                context._transitionLock = false; 
+                context._transitionLock = false;
+                context._stagedFrame = enterFrame;
                 exitFrame.parentNode.removeChild(exitFrame); 
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
                 enterFrame.style['-webkit-animation']   = '';
                 enterFrame.style['animation']           = '';
-            }, animation_time);
+            }, Math.max(exit_animation_time, enter_animation_time));
         },
     };
 
