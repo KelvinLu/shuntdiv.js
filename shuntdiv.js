@@ -403,20 +403,20 @@ ShuntDiv = (function(){
             style  = document.createElement('style');
             style.type = 'text/css';
             style.innerHTML = '@-webkit-keyframes zRotateExit {\n' +
-                'from { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
-                'to { transform: rotate' + rotateAxis + '(' + rotateSignExit + '90deg) translate' + translateAxis + '(' + translateSignExit + '100%); }\n' +
+                'from { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); opacity: 1; }\n' +
+                'to { transform: rotate' + rotateAxis + '(' + rotateSignExit + '90deg) translate' + translateAxis + '(' + translateSignExit + '100%); opacity: 0; }\n' +
                 '}\n' +
                 '@-webkit-keyframes zRotateEnter {\n' +
-                'from { transform: rotate' + rotateAxis + '(' + rotateSignEnter + '90deg) translate' + translateAxis + '(' + translateSignEnter + '100%); }\n' +
-                'to { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
+                'from { transform: rotate' + rotateAxis + '(' + rotateSignEnter + '90deg) translate' + translateAxis + '(' + translateSignEnter + '100%); opacity: 0; }\n' +
+                'to { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); opacity: 1; }\n' +
                 '}\n' +
                 '@keyframes zRotateExit {\n' +
-                'from { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
-                'to { transform: rotate' + rotateAxis + '(' + rotateSignExit + '90deg) translate' + translateAxis + '('+ translateSignExit + '100%); }\n' +
+                'from { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); opacity: 1; }\n' +
+                'to { transform: rotate' + rotateAxis + '(' + rotateSignExit + '90deg) translate' + translateAxis + '('+ translateSignExit + '100%); opacity: 0; }\n' +
                 '}\n' +
                 '@keyframes zRotateEnter {\n' +
-                'from { transform: rotate' + rotateAxis + '(' + rotateSignEnter +  '90deg) translate' + translateAxis + '(' + translateSignEnter + '100%); }\n' +
-                'to { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
+                'from { transform: rotate' + rotateAxis + '(' + rotateSignEnter +  '90deg) translate' + translateAxis + '(' + translateSignEnter + '100%); opacity: 0; }\n' +
+                'to { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); opacity: 1; }\n' +
                 '}\n';
 
             document.body.appendChild(style);
