@@ -3,6 +3,7 @@ ShuntDiv = (function(){
         // Load options
         this.options = {
             'default': null,
+            'saveWithHash': false,
         };
 
         if ((options) && (options instanceof Object)) for (option in options) if (options.hasOwnProperty(option))
@@ -45,7 +46,19 @@ ShuntDiv = (function(){
         this._transitions = [];
         for (var i = transitions.length - 1; i >= 0; i--)
             this.addTransition(transitions[i]);
-    }
+
+        // Attach hash change listener
+        if (this.options.saveWithHash) {
+            if ((id = location.hash.slice(1)) && (!!id))
+                this.showFrameById(id);
+
+            window.addEventListener('hashchange', (function(event) {
+                if ((id = location.hash.slice(1)) && (!!id) && (this._stagedFrame.getAttribute('id') != id))
+                    this.showFrameById(id);
+            }).bind(this));
+        }
+            
+    };
 
     ShuntDiv.prototype.addTransition = function(transitionObj) {
         if (this._transitions.indexOf(transitionObj) === -1)
@@ -136,6 +149,9 @@ ShuntDiv = (function(){
 
     ShuntDiv.prototype.setStagedFrame = function(frame) {
         this._stagedFrame = frame;
+
+        if ((id = frame.getAttribute('id')) && (!!id))
+            location.hash = id;
     };
 
     ShuntDiv.prototype.showFrame = function(elem) {
