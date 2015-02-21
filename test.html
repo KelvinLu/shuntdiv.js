@@ -11,7 +11,7 @@
                 <p>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae metus et nisi elementum lobortis. Praesent nec suscipit urna, quis congue odio. Mauris facilisis a odio sit amet consectetur. Mauris sit amet ante sed arcu consequat porttitor. Aenean placerat, enim eu ullamcorper euismod, nunc est luctus dui, in ultrices massa mauris sit amet risus. Vivamus eleifend, nulla nec blandit ultricies, felis risus bibendum lorem, vel tempor tortor nulla vel massa. Integer at magna auctor lorem pharetra pharetra sed eu sapien. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent volutpat ante ac urna viverra, in placerat augue eleifend. Sed et molestie diam, quis tempus tellus. Etiam efficitur risus leo, quis ultrices nisi semper in. Vivamus tincidunt nibh augue. Fusce scelerisque nisl orci, eget congue nulla vehicula vitae. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ac lacus eu augue efficitur tempor.<br/>
                     <br/>
-                    Click anywhere to go to the next frame or press space to skip to the last one!
+                    Swipe right (sorry non-mobile users!) to go to the next frame or press space to skip to the last one!
                 </p>
             </div>
 
@@ -46,8 +46,9 @@
         <script type="text/javascript" src="shuntdiv.js"></script>
         <script type="text/javascript">
             testShunt = new ShuntDiv(document.getElementById('main-content'), [
-                new ShuntDiv.Transition('intro', 'info-1' , 'zRotate', 'click', {
-                    direction: 'right',
+                new ShuntDiv.Transition('intro', 'info-1' , 'zRotate', 'touchSwipe', {
+                    swipe: 'right',
+                    rotate: 'right',
                 }),
 
                 new ShuntDiv.Transition('intro', 'contact' , 'exitAnimateCss', 'keypress', {

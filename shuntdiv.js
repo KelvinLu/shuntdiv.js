@@ -223,12 +223,13 @@ ShuntDiv = (function(){
 
         trigger = triggerFunc(context, transformFunc, exitFrame, enterFrame, this.options);
         this.triggerElem = trigger.elem;
+        this.listener = trigger.listener;
         this.callback = trigger.callback;
     };
 
     Transition.prototype.remove = function() {
-        if (this.triggerElem && this.callback)
-            this.triggerElem.removeEventListener(this.trigger, this.callback);
+        if (this.triggerElem && this.listener && this.callback)
+            this.triggerElem.removeEventListener(this.listener, this.callback);
     };
 
     // A Trigger function adds an event listener to a concrete frame and
@@ -252,7 +253,8 @@ ShuntDiv = (function(){
             triggerElem.addEventListener('click', triggerCallback);
 
             return {
-                elem: triggerElem, 
+                elem: triggerElem,
+                listener: 'click',
                 callback: triggerCallback,
             };
         },
@@ -272,6 +274,7 @@ ShuntDiv = (function(){
 
             return {
                 elem: document, 
+                listener: 'keydown',
                 callback: triggerCallback,
             };
         },
@@ -281,6 +284,77 @@ ShuntDiv = (function(){
                 if ((e.keyCode == keyCode) && (context.getStagedFrame() == exitFrame)) {
                     transformCallback(context, exitFrame, enterFrame, options);
                 }
+            };
+        },
+
+        'touchSwipe': function(context, transformCallback, exitFrame, enterFrame, options) {
+            touchPos = {
+                startX: undefined,
+                startY: undefined,
+                moveX: undefined,
+                moveY: undefined,
+                deviateX: 0,
+                deviateY: 0,
+            };
+
+            maxDeviate = 30;
+            minMoveX = 50;
+            minMoveY = 50;
+
+            checkDirection = function() {
+                dir = null;
+
+                if ((touchPos.deviateX < maxDeviate) || (touchPos.deviateY < maxDeviate)) {
+                    if ((diffX = Math.abs(touchPos.moveX - touchPos.startX)) > (diffY = Math.abs(touchPos.moveY - touchPos.startY))) {
+                        if (diffX > minMoveX) {
+                            if (touchPos.moveX < touchPos.startX) 
+                                dir = 'left';
+                            else
+                                dir = 'right';
+                        }
+                    } else {
+                        if (diffY > minMoveY) {
+                            if (touchPos.moveY > touchPos.startY) 
+                                dir = 'down';
+                            else
+                                dir = 'up';
+                        }
+                    }
+                }
+
+                if ((dir === options.swipe) && (context.getStagedFrame() == exitFrame)) {
+                    transformCallback(context, exitFrame, enterFrame, options);
+                }
+            };
+
+            triggerCallback = function(startEvent) {
+                touchPos.startX = startEvent.touches[0].screenX;
+                touchPos.startY = startEvent.touches[0].screenY;
+
+                exitFrame.addEventListener('touchmove', (moveCallback = function(moveEvent) {
+                    touchPos.moveX = moveEvent.touches[0].screenX;
+                    touchPos.moveY = moveEvent.touches[0].screenY;
+
+                    touchPos.deviateX = Math.max(touchPos.deviateX, Math.abs(touchPos.moveX - touchPos.startX));
+                    touchPos.deviateY = Math.max(touchPos.deviateY, Math.abs(touchPos.moveY - touchPos.startY));
+                }));
+
+                exitFrame.addEventListener('touchend', (endCallback = function(endEvent) {
+                    checkDirection();
+                    touchPos.deviateX = touchPos.deviateY = 0;
+
+                    // Clean up listeners
+                    exitFrame.removeEventListener('touchmove', moveCallback);
+                    exitFrame.removeEventListener('touchend', endCallback);
+                }));
+            };
+
+            exitFrame.addEventListener('touchstart', triggerCallback);
+
+            return {
+                elem: exitFrame,
+                listener: 'touchstart',
+                callback: triggerCallback,
             };
         },
     };
@@ -390,7 +464,7 @@ ShuntDiv = (function(){
             if (context.getTransitionLock()) return;
             context.transitionLock();
 
-            direction = (options) ? options.direction || 'up' : 'up';
+            direction = (options) ? options.rotate || 'up' : 'up';
 
             rotateAxis = ((direction == 'up') || (direction == 'down')) ? 'X' : 'Y';
             rotateSignExit =  ((direction == 'up') || (direction == 'right')) ? '-' : '';
