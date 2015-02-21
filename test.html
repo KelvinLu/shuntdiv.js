@@ -59,9 +59,9 @@
                 }),
 
                 new ShuntDiv.Transition('info-2', 'contact' , 'dualAnimateCss', 'click', {
-                    exit_animation_name: 'slideOutUp',
+                    exit_animation_name: 'fadeOut',
                     exit_animation_function: 'cubic-bezier(.1,1,.61,.96)',
-                    enter_animation_name: 'slideInUp',
+                    enter_animation_name: 'slideInDown',
                     enter_animation_function: 'cubic-bezier(.1,1,.61,.96)',
                     enter_above: true,
                 }),
@@ -69,7 +69,11 @@
                 default: 'intro',
             });
 
-            testShunt.addTransition(new ShuntDiv.Transition('contact', 'info-1' , 'replace', 'keypress', {key: 'a'}));
+            testShunt.addTransition(new ShuntDiv.Transition('contact', 'info-1' , 'exitAnimateCss', 'keypress', {
+                key: 'a',
+                animation_name: 'hinge',
+                animation_time: 2000,
+            }));
         </script>
     </body>
 </html>
