@@ -48,16 +48,21 @@
             testShunt = new ShuntDiv(document.getElementById('main-content'), [
                 new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'click'),
 
-                new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'keypress', {key: 32}),
+                new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'keypress', {
+                    key: 32,
+                }),
 
                 new ShuntDiv.Transition('info-1', 'info-2' , 'enterAnimateCss', 'click', {
                     animation_name: 'fadeInUp',
                     animation_time: 1000,
+                    animation_function: 'cubic-bezier(.1,1,.61,.96)',
                 }),
 
                 new ShuntDiv.Transition('info-2', 'contact' , 'dualAnimateCss', 'click', {
-                    exit_animation_name: 'slideOutUp', 
+                    exit_animation_name: 'slideOutUp',
+                    exit_animation_function: 'cubic-bezier(.1,1,.61,.96)',
                     enter_animation_name: 'slideInUp',
+                    enter_animation_function: 'cubic-bezier(.1,1,.61,.96)',
                     enter_above: true,
                 }),
             ], {
