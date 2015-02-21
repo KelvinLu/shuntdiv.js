@@ -135,6 +135,10 @@ ShuntDiv = (function(){
                 return this._frames.splice(i, 1)[0]; 
     };
 
+    ShuntDiv.prototype.getTransitionLock = function() {
+        return this._transitionLock;
+    };
+
     ShuntDiv.prototype.transitionLock = function() {
         this._transitionLock = true;
     };
@@ -291,7 +295,7 @@ ShuntDiv = (function(){
 
     var Transforms = ShuntDiv.Transforms = {
         'replace': function(context, exitFrame, enterFrame, options) {
-            if (context._transitionLock) return;
+            if (context.getTransitionLock()) return;
             context.transitionLock();
 
             exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
@@ -304,7 +308,7 @@ ShuntDiv = (function(){
         },
 
         'enterAnimateCss': function(context, exitFrame, enterFrame, options) {
-            if (context._transitionLock) return;
+            if (context.getTransitionLock()) return;
             context.transitionLock();
 
             animation_name = (options) ? options.animation_name || 'fadeIn' : 'fadeIn';
@@ -326,7 +330,7 @@ ShuntDiv = (function(){
         },
 
         'exitAnimateCss': function(context, exitFrame, enterFrame, options) {
-            if (context._transitionLock) return;
+            if (context.getTransitionLock()) return;
             context.transitionLock();
 
             animation_name = (options) ? options.animation_name || 'fadeOut' : 'fadeOut';
@@ -348,7 +352,7 @@ ShuntDiv = (function(){
         },
 
         'dualAnimateCss': function(context, exitFrame, enterFrame, options) {
-            if (context._transitionLock) return;
+            if (context.getTransitionLock()) return;
             context.transitionLock();
 
             exit_animation_name = (options) ? options.exit_animation_name || 'fadeIn' : 'fadeIn';
@@ -359,7 +363,7 @@ ShuntDiv = (function(){
             enter_animation_time = (options) ? options.enter_animation_time || 500 : 500;
             enter_animation_function = (options) ? options.enter_animation_function || 'linear' : 'linear';
 
-            enter_above = (options) ? options.enter_above || false : false;
+            enter_above = (options) ? options.enter_above || true : true;
 
             if (enter_above)
                 exitFrame.parentNode.appendChild(enterFrame);
@@ -380,6 +384,72 @@ ShuntDiv = (function(){
                 enterFrame.style['-webkit-animation']   = '';
                 enterFrame.style['animation']           = '';
             }, Math.max(exit_animation_time, enter_animation_time));
+        },
+
+        'zRotate': function(context, exitFrame, enterFrame, options) {
+            if (context.getTransitionLock()) return;
+            context.transitionLock();
+
+            direction = (options) ? options.direction || 'up' : 'up';
+
+            rotateAxis = ((direction == 'up') || (direction == 'down')) ? 'X' : 'Y';
+            rotateSignExit =  ((direction == 'up') || (direction == 'right')) ? '-' : '';
+            rotateSignEnter =  ((direction == 'up') || (direction == 'right')) ? '' : '-';
+
+            translateAxis = ((direction == 'up') || (direction == 'down')) ? 'Y' : 'X';
+            translateSignExit =  ((direction == 'up') || (direction == 'left')) ? '-' : '';
+            translateSignEnter =  ((direction == 'up') || (direction == 'left')) ? '' : '-';
+
+            style  = document.createElement('style');
+            style.type = 'text/css';
+            style.innerHTML = '@-webkit-keyframes zRotateExit {\n' +
+                'from { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
+                'to { transform: rotate' + rotateAxis + '(' + rotateSignExit + '90deg) translate' + translateAxis + '(' + translateSignExit + '100%); }\n' +
+                '}\n' +
+                '@-webkit-keyframes zRotateEnter {\n' +
+                'from { transform: rotate' + rotateAxis + '(' + rotateSignEnter + '90deg) translate' + translateAxis + '(' + translateSignEnter + '100%); }\n' +
+                'to { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
+                '}\n' +
+                '@keyframes zRotateExit {\n' +
+                'from { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
+                'to { transform: rotate' + rotateAxis + '(' + rotateSignExit + '90deg) translate' + translateAxis + '('+ translateSignExit + '100%); }\n' +
+                '}\n' +
+                '@keyframes zRotateEnter {\n' +
+                'from { transform: rotate' + rotateAxis + '(' + rotateSignEnter +  '90deg) translate' + translateAxis + '(' + translateSignEnter + '100%); }\n' +
+                'to { transform: rotate' + rotateAxis + '(0deg) translate' + translateAxis + '(0%); }\n' +
+                '}\n';
+
+            document.body.appendChild(style);
+
+            exit_animation_name = 'zRotateExit';
+            enter_animation_name = 'zRotateEnter';
+
+            animation_time = 1000;
+            animation_function = 'cubic-bezier(.17,.67,.42,.99)';
+
+            exitFrame.parentNode.appendChild(enterFrame);
+
+            context._container.style['perspective'] = '300px';
+            context._container.style['perspective-origin'] = '50% 50%';
+
+            exitFrame.style['-webkit-animation']    = exit_animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+            exitFrame.style['animation']            = exit_animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+            enterFrame.style['-webkit-animation']   = enter_animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+            enterFrame.style['animation']           = enter_animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
+
+            setTimeout(function() { 
+                context.transitionUnlock();
+                context.setStagedFrame(enterFrame);
+                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.style['-webkit-animation']    = '';
+                exitFrame.style['animation']            = '';
+                enterFrame.style['-webkit-animation']   = '';
+                enterFrame.style['animation']           = '';
+
+                document.body.removeChild(style);
+                context._container.style['perspective'] = 'inherit';
+                context._container.style['perspective-origin'] = 'inherit';
+            }, animation_time);
         },
     };
 

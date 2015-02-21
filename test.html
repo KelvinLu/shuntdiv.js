@@ -46,7 +46,9 @@
         <script type="text/javascript" src="shuntdiv.js"></script>
         <script type="text/javascript">
             testShunt = new ShuntDiv(document.getElementById('main-content'), [
-                new ShuntDiv.Transition('intro', 'info-1' , 'exitAnimateCss', 'click'),
+                new ShuntDiv.Transition('intro', 'info-1' , 'zRotate', 'click', {
+                    direction: 'right',
+                }),
 
                 new ShuntDiv.Transition('intro', 'contact' , 'exitAnimateCss', 'keypress', {
                     key: 32,
