@@ -57,7 +57,9 @@ ShuntDiv = (function(){
                     this.showFrameById(id);
             }).bind(this));
         }
-            
+        
+        // Attach swipe listener
+        this._swipeChecker = new ShuntDiv.SwipeChecker(this._container);
     };
 
     ShuntDiv.prototype.addTransition = function(transitionObj) {
@@ -183,6 +185,63 @@ ShuntDiv = (function(){
             }
     };
 
+
+    var SwipeChecker = ShuntDiv.SwipeChecker = function(container) {
+        this.elem = container;
+
+        touchPos = this.touchPos = {
+            startX: undefined,
+            startY: undefined,
+            moveX: undefined,
+            moveY: undefined,
+            deviateX: 0,
+            deviateY: 0,
+        };
+
+        maxDeviate = 30;
+        minMoveX = 50;
+        minMoveY = 50;
+
+        this.elem.addEventListener('touchstart', (startCallback = function(startEvent) {
+            touchPos.startX = startEvent.touches[0].screenX;
+            touchPos.startY = startEvent.touches[0].screenY; 
+        }));
+
+        this.elem.addEventListener('touchmove', (moveCallback = function(moveEvent) {
+            touchPos.moveX = moveEvent.touches[0].screenX;
+            touchPos.moveY = moveEvent.touches[0].screenY;
+
+            touchPos.deviateX = Math.max(touchPos.deviateX, Math.abs(touchPos.moveX - touchPos.startX));
+            touchPos.deviateY = Math.max(touchPos.deviateY, Math.abs(touchPos.moveY - touchPos.startY));
+        }));
+
+        this.elem.addEventListener('touchend', (endCallback = function(endEvent) {
+            dir = null;
+
+            if ((touchPos.deviateX < maxDeviate) || (touchPos.deviateY < maxDeviate)) {
+                if ((diffX = Math.abs(touchPos.moveX - touchPos.startX)) > (diffY = Math.abs(touchPos.moveY - touchPos.startY))) {
+                    if (diffX > minMoveX) {
+                        if (touchPos.moveX < touchPos.startX) 
+                            dir = 'left';
+                        else
+                            dir = 'right';
+                    }
+                } else {
+                    if (diffY > minMoveY) {
+                        if (touchPos.moveY > touchPos.startY) 
+                            dir = 'down';
+                        else
+                            dir = 'up';
+                    }
+                }
+            }
+
+            touchPos.deviateX = touchPos.deviateY = 0;
+
+            container.dispatchEvent(new CustomEvent('shuntdivswiped', { detail: dir }));
+        }));
+    };
+
     // A Transition object describes the relationship between two concrete 
     // frames, their Transform function, and a Trigger function for some
     // animation
@@ -288,75 +347,27 @@ ShuntDiv = (function(){
         },
 
         'touchSwipe': function(context, transformCallback, exitFrame, enterFrame, options) {
-            touchPos = {
-                startX: undefined,
-                startY: undefined,
-                moveX: undefined,
-                moveY: undefined,
-                deviateX: 0,
-                deviateY: 0,
-            };
+            swipeDir = options.swipe;
 
-            maxDeviate = 30;
-            minMoveX = 50;
-            minMoveY = 50;
+            triggerCallback = ShuntDiv.Triggers._touchswipefactory(swipeDir, context, transformCallback, exitFrame, enterFrame, options);
 
-            checkDirection = function() {
-                dir = null;
-
-                if ((touchPos.deviateX < maxDeviate) || (touchPos.deviateY < maxDeviate)) {
-                    if ((diffX = Math.abs(touchPos.moveX - touchPos.startX)) > (diffY = Math.abs(touchPos.moveY - touchPos.startY))) {
-                        if (diffX > minMoveX) {
-                            if (touchPos.moveX < touchPos.startX) 
-                                dir = 'left';
-                            else
-                                dir = 'right';
-                        }
-                    } else {
-                        if (diffY > minMoveY) {
-                            if (touchPos.moveY > touchPos.startY) 
-                                dir = 'down';
-                            else
-                                dir = 'up';
-                        }
-                    }
-                }
-
-                if ((dir === options.swipe) && (context.getStagedFrame() == exitFrame)) {
-                    transformCallback(context, exitFrame, enterFrame, options);
-                }
-            };
-
-            triggerCallback = function(startEvent) {
-                touchPos.startX = startEvent.touches[0].screenX;
-                touchPos.startY = startEvent.touches[0].screenY;
-
-                exitFrame.addEventListener('touchmove', (moveCallback = function(moveEvent) {
-                    touchPos.moveX = moveEvent.touches[0].screenX;
-                    touchPos.moveY = moveEvent.touches[0].screenY;
-
-                    touchPos.deviateX = Math.max(touchPos.deviateX, Math.abs(touchPos.moveX - touchPos.startX));
-                    touchPos.deviateY = Math.max(touchPos.deviateY, Math.abs(touchPos.moveY - touchPos.startY));
-                }));
-
-                exitFrame.addEventListener('touchend', (endCallback = function(endEvent) {
-                    checkDirection();
-                    touchPos.deviateX = touchPos.deviateY = 0;
-
-                    // Clean up listeners
-                    exitFrame.removeEventListener('touchmove', moveCallback);
-                    exitFrame.removeEventListener('touchend', endCallback);
-                }));
-            };
-
-            exitFrame.addEventListener('touchstart', triggerCallback);
+            context._container.addEventListener('shuntdivswiped', triggerCallback);
 
             return {
                 elem: exitFrame,
-                listener: 'touchstart',
+                listener: 'shuntdivswiped',
                 callback: triggerCallback,
             };
         },
+
+        '_touchswipefactory': function(swipeDir, context, transformCallback, exitFrame, enterFrame, options) {
+            return function(e) {
+                if ((e.detail == swipeDir) && (context.getStagedFrame() == exitFrame)) {
+                    transformCallback(context, exitFrame, enterFrame, options);
+                }
+            };
+        },
+
     };
 
     // A Transform function should take any two DOM elements and perform the
