@@ -154,7 +154,7 @@ ShuntDiv = (function(){
     ShuntDiv.prototype.setStagedFrame = function(frame) {
         this._stagedFrame = frame;
 
-        if ((id = frame.getAttribute('id')) && (!!id))
+        if ((id = frame.getAttribute('id')) && (!!id) && this.options.saveWithHash)
             location.hash = id;
     };
 
