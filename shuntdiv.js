@@ -158,6 +158,9 @@ ShuntDiv = (function(){
 
         if ((id = frame.getAttribute('id')) && (!!id) && this.options.saveWithHash)
             location.hash = id;
+            
+        if (callback = this.options['onTransition'])
+            callback();
     };
 
     ShuntDiv.prototype.showFrame = function(elem) {
