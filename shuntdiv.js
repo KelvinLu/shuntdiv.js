@@ -22,8 +22,8 @@ ShuntDiv = (function(){
                 frame.style.position =  'absolute';
                 frame.style.top =       0;
                 frame.style.left =      0;
-                frame.style.width =     '100%';
-                frame.style.height =    '100%';
+                frame.style.minWidth =     '100%';
+                frame.style.minHeight =    '100%';
                 frame.style['box-sizing'] = 'border-box';
 
                 frameContainer.removeChild(frame);
@@ -31,7 +31,7 @@ ShuntDiv = (function(){
 
         // Set container inital CSS
         frameContainer.style.position = 'relative';
-        frameContainer.style.overflow = 'hidden';
+        frameContainer.style.overflow = this.options['overflow'] || 'hidden';
 
         // Attach default frame
         if (this._frames) {
@@ -158,6 +158,9 @@ ShuntDiv = (function(){
 
         if ((id = frame.getAttribute('id')) && (!!id) && this.options.saveWithHash)
             location.hash = id;
+
+        if (callback = this.options['onTransition'])
+            callback();
     };
 
     ShuntDiv.prototype.showFrame = function(elem) {
