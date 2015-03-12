@@ -479,7 +479,7 @@ ShuntDiv = (function(){
             context.transitionLock();
 
             direction = (options) ? options.rotate || 'up' : 'up';
-            animation_time = (options) ? options.animation_time || 1000 : 1000;
+            animation_time = (options) ? options.animation_time || 500 : 500;
             animation_function = (options) ? options.animation_function || 'cubic-bezier(.17,.67,.42,.99)' : 'cubic-bezier(.17,.67,.42,.99)';
 
             rotateAxis = ((direction == 'up') || (direction == 'down')) ? 'X' : 'Y';
