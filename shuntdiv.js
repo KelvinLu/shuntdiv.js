@@ -479,6 +479,8 @@ ShuntDiv = (function(){
             context.transitionLock();
 
             direction = (options) ? options.rotate || 'up' : 'up';
+            animation_time = (options) ? options.animation_time || 1000 : 1000;
+            animation_function = (options) ? options.animation_function || 'cubic-bezier(.17,.67,.42,.99)' : 'cubic-bezier(.17,.67,.42,.99)';
 
             rotateAxis = ((direction == 'up') || (direction == 'down')) ? 'X' : 'Y';
             rotateSignExit =  ((direction == 'up') || (direction == 'right')) ? '-' : '';
@@ -511,9 +513,6 @@ ShuntDiv = (function(){
 
             exit_animation_name = 'zRotateExit';
             enter_animation_name = 'zRotateEnter';
-
-            animation_time = 1000;
-            animation_function = 'cubic-bezier(.17,.67,.42,.99)';
 
             exitFrame.parentNode.appendChild(enterFrame);
 
