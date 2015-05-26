@@ -301,6 +301,28 @@ ShuntDiv = (function(){
     // myTrigger = function(context, transformCallback, exitFrame, enterFrame, [eventArgs]*) { ... };
 
     var Triggers = ShuntDiv.Triggers = {
+        'event': function(context, transformCallback, exitFrame, enterFrame, options) {
+            if (options && (clickElemId = options.id))
+                triggerElem = exitFrame.querySelector('#' + clickElemId);
+            else
+                triggerElem = exitFrame;
+
+            triggerCallback = function() {
+                if (context.getStagedFrame() == exitFrame)
+                    transformCallback(context, exitFrame, enterFrame, options);
+            };
+
+            eventName = options.eventName || 'none';
+
+            triggerElem.addEventListener(eventName, triggerCallback);
+
+            return {
+                elem: triggerElem,
+                listener: 'event',
+                callback: triggerCallback,
+            };
+        },
+
         'click': function(context, transformCallback, exitFrame, enterFrame, options) {
             if (options && (clickElemId = options.id))
                 triggerElem = exitFrame.querySelector('#' + clickElemId);
