@@ -1,5 +1,5 @@
 ShuntDiv = (function(){
-    ShuntDiv = function(frameContainer, transitions, options) {
+    ShuntDiv = function(frameContainer, shunts, options) {
         // Load options
         this.options = {
             'default': null,
@@ -42,10 +42,11 @@ ShuntDiv = (function(){
             frameContainer.appendChild(this._stagedFrame = this._frames[i]);
         }
 
-        // Create transitions with triggers
+        // Create introductions and transitions with triggers
+        this._introductions = {};
         this._transitions = [];
-        for (var i = transitions.length - 1; i >= 0; i--)
-            this.addTransition(transitions[i]);
+        for (var i = shunts.length - 1; i >= 0; i--)
+            this.addShunt(shunts[i]);
 
         // Attach hash change listener
         if (this.options.saveWithHash) {
@@ -62,6 +63,29 @@ ShuntDiv = (function(){
         this._swipeChecker = new ShuntDiv.SwipeChecker(this._container);
     };
 
+    ShuntDiv.prototype.addShunt = function(shuntObj) {
+        if (shuntObj instanceof Introduction)
+          this.addIntroduction(shuntObj)
+        else if (shuntObj instanceof Transition)
+          this.addTransition(shuntObj)
+    };
+
+    ShuntDiv.prototype.addIntroduction = function(introductionObj) {
+        if (!introductionObj.enterFrameId) return;
+        this._introductions[introductionObj.enterFrameId] = introductionObj;
+        introductionObj.initialize(this);
+    };
+
+    ShuntDiv.prototype.removeIntroduction = function(introductionObj) {
+        delete this._introductions[introductionObj.enterFrameId];
+        introductionObj.remove();
+    };
+
+    ShuntDiv.prototype.removeIntroductionsByFrame = function(frameId) {
+      delete this._introductions[frameId];
+      introductionObj.remove();
+    };
+
     ShuntDiv.prototype.addTransition = function(transitionObj) {
         if (this._transitions.indexOf(transitionObj) === -1)
         {
@@ -70,7 +94,15 @@ ShuntDiv = (function(){
         }
     };
 
-    ShuntDiv.prototype.removeTransition = function(frameId) {
+    ShuntDiv.prototype.removeTransition = function(transitionObj) {
+        if ((i = this._transitions.indexOf(transitionObj)) === -1)
+        {
+            this._transitions.splice(i, 1);
+            transitionObj.remove();
+        }
+    };
+
+    ShuntDiv.prototype.removeTransitionsByFrame = function(frameId) {
         for (var i = this._transitions.length - 1; i >= 0; i--) {
             // Removing list elements from the end of the list? Smart.
             transitionObj = this._transitions[i];
@@ -188,6 +220,10 @@ ShuntDiv = (function(){
             }
     };
 
+    ShuntDiv.prototype.introduce = function(enterFrameId) {
+        if (!(introductionObj = this._introductions[enterFrameId])) return;
+        introductionObj.introduce(this);
+    };
 
     var SwipeChecker = ShuntDiv.SwipeChecker = function(container) {
         this.elem = container;
@@ -245,6 +281,46 @@ ShuntDiv = (function(){
         }));
     };
 
+    // An Introduction object describes the "manual" introduction of some
+    // frame, and their Transform function.
+
+    var Introduction = ShuntDiv.Introduction = function(enterFrameId, transform, options) {
+        this.enterFrameId =     enterFrameId;
+        this.transform =        transform;
+        this.options =          options;
+
+        this.callback =         undefined;
+    };
+
+    Introduction.prototype.initialize = function(context) {
+        enterFrame = undefined;
+
+        for (var i = context._frames.length - 1; i >= 0; i--) {
+            frame = context._frames[i];
+            frameId = frame.getAttribute('id');
+
+            if (frameId === this.enterFrameId) enterFrame = frame;
+        };
+
+        transformFunc = ShuntDiv.Transforms[this.transform];
+
+        if (!enterFrame || !transformFunc) return;
+
+        options = this.options;
+
+        this.callback = function(context) {
+            transformFunc(context, context.getStagedFrame(), enterFrame, options);
+        }
+    };
+
+    Introduction.prototype.remove = function() {
+        delete this.callback;
+    };
+
+    Introduction.prototype.introduce = function(context) {
+        this.callback(context);
+    };
+
     // A Transition object describes the relationship between two concrete
     // frames, their Transform function, and a Trigger function for some
     // animation
@@ -295,7 +371,7 @@ ShuntDiv = (function(){
     };
 
     // A Trigger function adds an event listener to a concrete frame and
-    // assigns a Transform callback.
+    // binds a Transform callback.
 
     // Example: Trigger function signature
     // myTrigger = function(context, transformCallback, exitFrame, enterFrame, [eventArgs]*) { ... };
