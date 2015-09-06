@@ -57,7 +57,7 @@ ShuntDiv = (function(){
                     this.showFrameById(id);
             }).bind(this));
         }
-        
+
         // Attach swipe listener
         this._swipeChecker = new ShuntDiv.SwipeChecker(this._container);
     };
@@ -98,7 +98,7 @@ ShuntDiv = (function(){
     };
 
     ShuntDiv.prototype.addFrameByElem = function(frameElem) {
-        if (this._frames.indexOf(frameElem) === -1) 
+        if (this._frames.indexOf(frameElem) === -1)
             return this._frames.push(frameElem);
     };
 
@@ -134,7 +134,7 @@ ShuntDiv = (function(){
     ShuntDiv.prototype.removeFrameById = function(frameId) {
         for (var i = this._frames.length - 1; i >= 0; i--)
             if (this._frames[i].getAttribute('id') === frameId)
-                return this._frames.splice(i, 1)[0]; 
+                return this._frames.splice(i, 1)[0];
     };
 
     ShuntDiv.prototype.getTransitionLock = function() {
@@ -158,7 +158,7 @@ ShuntDiv = (function(){
 
         if ((id = frame.getAttribute('id')) && (!!id) && this.options.saveWithHash)
             location.hash = id;
-            
+
         if (callback = this.options['onTransition'])
             callback();
     };
@@ -176,7 +176,7 @@ ShuntDiv = (function(){
                 this._container.removeChild(this.getStagedFrame());
                 this.setStagedFrame(frame);
                 this._container.appendChild(frame);
-            }    
+            }
         };
 
     ShuntDiv.prototype.showFrameById = function(frameId) {
@@ -207,7 +207,7 @@ ShuntDiv = (function(){
 
         this.elem.addEventListener('touchstart', (startCallback = function(startEvent) {
             touchPos.startX = startEvent.touches[0].screenX;
-            touchPos.startY = startEvent.touches[0].screenY; 
+            touchPos.startY = startEvent.touches[0].screenY;
         }));
 
         this.elem.addEventListener('touchmove', (moveCallback = function(moveEvent) {
@@ -224,14 +224,14 @@ ShuntDiv = (function(){
             if ((touchPos.deviateX < maxDeviate) || (touchPos.deviateY < maxDeviate)) {
                 if ((diffX = Math.abs(touchPos.moveX - touchPos.startX)) > (diffY = Math.abs(touchPos.moveY - touchPos.startY))) {
                     if (diffX > minMoveX) {
-                        if (touchPos.moveX < touchPos.startX) 
+                        if (touchPos.moveX < touchPos.startX)
                             dir = 'left';
                         else
                             dir = 'right';
                     }
                 } else {
                     if (diffY > minMoveY) {
-                        if (touchPos.moveY > touchPos.startY) 
+                        if (touchPos.moveY > touchPos.startY)
                             dir = 'down';
                         else
                             dir = 'up';
@@ -245,7 +245,7 @@ ShuntDiv = (function(){
         }));
     };
 
-    // A Transition object describes the relationship between two concrete 
+    // A Transition object describes the relationship between two concrete
     // frames, their Transform function, and a Trigger function for some
     // animation
 
@@ -260,7 +260,7 @@ ShuntDiv = (function(){
         this.options =          options;
 
         this.triggerElem =      undefined;
-        this.callback =         undefined;  
+        this.callback =         undefined;
     };
 
     Transition.prototype.initialize = function(context) {
@@ -280,8 +280,8 @@ ShuntDiv = (function(){
         triggerFunc = ShuntDiv.Triggers[this.trigger];
         transformFunc = ShuntDiv.Transforms[this.transform];
 
-        if (!exitFrame && !enterFrame) return;
-        if (!triggerFunc && !transformFunc) return;
+        if (!exitFrame || !enterFrame) return;
+        if (!triggerFunc || !transformFunc) return;
 
         trigger = triggerFunc(context, transformFunc, exitFrame, enterFrame, this.options);
         this.triggerElem = trigger.elem;
@@ -357,7 +357,7 @@ ShuntDiv = (function(){
             document.addEventListener('keydown', triggerCallback);
 
             return {
-                elem: document, 
+                elem: document,
                 listener: 'keydown',
                 callback: triggerCallback,
             };
@@ -410,10 +410,10 @@ ShuntDiv = (function(){
 
             exitFrame.parentNode.insertBefore(enterFrame, exitFrame);
 
-            setTimeout(function(){ 
+            setTimeout(function(){
                 context.transitionUnlock();
                 context.setStagedFrame(enterFrame);
-                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.parentNode.removeChild(exitFrame);
             }, 10);
         },
 
@@ -430,10 +430,10 @@ ShuntDiv = (function(){
             enterFrame.style['-webkit-animation']    = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
             enterFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
-            setTimeout(function() { 
+            setTimeout(function() {
                 context.transitionUnlock();
                 context.setStagedFrame(enterFrame);
-                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.parentNode.removeChild(exitFrame);
                 enterFrame.style['-webkit-animation']    = '';
                 enterFrame.style['animation']            = '';
             }, animation_time);
@@ -452,10 +452,10 @@ ShuntDiv = (function(){
             exitFrame.style['-webkit-animation']    = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
             exitFrame.style['animation']            = animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
-            setTimeout(function() { 
+            setTimeout(function() {
                 context.transitionUnlock();
                 context.setStagedFrame(enterFrame);
-                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.parentNode.removeChild(exitFrame);
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
             }, animation_time);
@@ -485,10 +485,10 @@ ShuntDiv = (function(){
             enterFrame.style['-webkit-animation']   = enter_animation_name + ' ' + enter_animation_time.toString() + 'ms ' + enter_animation_function;
             enterFrame.style['animation']           = enter_animation_name + ' ' + enter_animation_time.toString() + 'ms ' + enter_animation_function;
 
-            setTimeout(function() { 
+            setTimeout(function() {
                 context.transitionUnlock();
                 context.setStagedFrame(enterFrame);
-                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.parentNode.removeChild(exitFrame);
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
                 enterFrame.style['-webkit-animation']   = '';
@@ -546,10 +546,10 @@ ShuntDiv = (function(){
             enterFrame.style['-webkit-animation']   = enter_animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
             enterFrame.style['animation']           = enter_animation_name + ' ' + animation_time.toString() + 'ms ' + animation_function;
 
-            setTimeout(function() { 
+            setTimeout(function() {
                 context.transitionUnlock();
                 context.setStagedFrame(enterFrame);
-                exitFrame.parentNode.removeChild(exitFrame); 
+                exitFrame.parentNode.removeChild(exitFrame);
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
                 enterFrame.style['-webkit-animation']   = '';
