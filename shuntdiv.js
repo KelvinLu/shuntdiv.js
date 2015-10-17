@@ -401,7 +401,10 @@ ShuntDiv = (function(){
 
         'click': function(context, transformCallback, exitFrame, enterFrame, options) {
             if (options && (clickElemId = options.id))
-                triggerElem = exitFrame.querySelector('#' + clickElemId);
+                if (qsElem = options.element)
+                  triggerElem = qsElem.querySelector('#' + clickElemId);
+                else
+                  triggerElem = exitFrame.querySelector('#' + clickElemId);
             else
                 triggerElem = exitFrame;
 
