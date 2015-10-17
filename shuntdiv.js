@@ -30,7 +30,7 @@ ShuntDiv = (function(){
             }
 
         // Set container inital CSS
-        frameContainer.style.position = 'relative';
+        frameContainer.style.position = frameContainer.style.position || 'relative';
         frameContainer.style.overflow = this.options['overflow'] || 'hidden';
 
         // Attach default frame
