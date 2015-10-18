@@ -293,23 +293,24 @@ ShuntDiv = (function(){
     };
 
     Introduction.prototype.initialize = function(context) {
-        enterFrame = undefined;
+        this.enterFrame = undefined;
 
         for (var i = context._frames.length - 1; i >= 0; i--) {
             frame = context._frames[i];
             frameId = frame.getAttribute('id');
 
-            if (frameId === this.enterFrameId) enterFrame = frame;
+            if (frameId === this.enterFrameId) this.enterFrame = frame;
         };
 
         transformFunc = ShuntDiv.Transforms[this.transform];
 
-        if (!enterFrame || !transformFunc) return;
+        if (!this.enterFrame || !transformFunc) return;
 
         options = this.options;
 
         this.callback = function(context) {
-            transformFunc(context, context.getStagedFrame(), enterFrame, options);
+            if (context.getStagedFrame() == this.enterFrame) return;
+            transformFunc(context, context.getStagedFrame(), this.enterFrame, options);
         }
     };
 
