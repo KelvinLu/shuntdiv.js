@@ -179,6 +179,10 @@ ShuntDiv = (function(){
 
     ShuntDiv.prototype.transitionUnlock = function() {
         this._transitionLock = false;
+        if (this._yielding) {
+            this._yielding();
+            this._yielding = undefined;
+        }
     };
 
     ShuntDiv.prototype.getStagedFrame = function() {
@@ -220,9 +224,11 @@ ShuntDiv = (function(){
             }
     };
 
-    ShuntDiv.prototype.introduce = function(enterFrameId) {
+    ShuntDiv.prototype.introduce = function(enterFrameId, yield) {
         if (!(introductionObj = this._introductions[enterFrameId])) return;
-        introductionObj.introduce(this);
+
+        if (!this.getTransitionLock()) introductionObj.introduce(this);
+        else this._yielding = introductionObj.introduce.bind(introductionObj, this);
     };
 
     var SwipeChecker = ShuntDiv.SwipeChecker = function(container) {
@@ -302,16 +308,14 @@ ShuntDiv = (function(){
             if (frameId === this.enterFrameId) this.enterFrame = frame;
         };
 
-        transformFunc = ShuntDiv.Transforms[this.transform];
+        this.transformFunc = ShuntDiv.Transforms[this.transform];
 
-        if (!this.enterFrame || !transformFunc) return;
+        if (!this.enterFrame || !this.transformFunc) return;
 
-        options = this.options;
-
-        this.callback = function(context) {
-            if (context.getStagedFrame() == this.enterFrame) return;
-            transformFunc(context, context.getStagedFrame(), this.enterFrame, options);
-        }
+        this.callback = function(cntxt) {
+            if (cntxt.getStagedFrame() == this.enterFrame) return;
+            this.transformFunc(cntxt, cntxt.getStagedFrame(), this.enterFrame, this.options);
+        };
     };
 
     Introduction.prototype.remove = function() {
@@ -567,13 +571,21 @@ ShuntDiv = (function(){
 
             setTimeout(function() {
                 context.transitionUnlock();
-                context.setStagedFrame(enterFrame);
                 exitFrame.parentNode.removeChild(exitFrame);
+                exitFrame.style['visibility']           = '';
+            }, Math.max(exit_animation_time, enter_animation_time) + 1);
+
+            setTimeout(function() {
+                exitFrame.style['visibility']           = 'hidden';
                 exitFrame.style['-webkit-animation']    = '';
                 exitFrame.style['animation']            = '';
+            }, exit_animation_time);
+
+            setTimeout(function() {
+                context.setStagedFrame(enterFrame);
                 enterFrame.style['-webkit-animation']   = '';
                 enterFrame.style['animation']           = '';
-            }, Math.max(exit_animation_time, enter_animation_time));
+            }, enter_animation_time);
         },
 
         'zRotate': function(context, exitFrame, enterFrame, options) {
