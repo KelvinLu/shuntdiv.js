@@ -427,6 +427,47 @@ ShuntDiv = (function(){
             };
         },
 
+        'wheel': function(context, transformCallback, exitFrame, enterFrame, options) {
+            if (options && (clickElemId = options.id))
+                if (qsElem = options.element)
+                  triggerElem = qsElem.querySelector('#' + clickElemId);
+                else
+                  triggerElem = exitFrame.querySelector('#' + clickElemId);
+            else
+                triggerElem = exitFrame;
+
+            deltaX = options.deltaX;
+            deltaY = options.deltaY;
+            deltaZ = options.deltaZ;
+
+            triggerCallback = ShuntDiv.Triggers._verticalwheelfactory(deltaX, deltaY, deltaZ, context, transformCallback, exitFrame, enterFrame, options);
+
+            triggerElem.addEventListener('wheel', triggerCallback);
+
+            return {
+                elem: triggerElem,
+                listener: 'wheel',
+                callback: triggerCallback,
+            };
+        },
+
+        '_verticalwheelfactory': function(deltaX, deltaY, deltaZ, context, transformCallback, exitFrame, enterFrame, options) {
+            return function(e) {
+                console.log();
+
+                if (context.getStagedFrame() == exitFrame) {
+                    if ((deltaX != undefined) && (deltaX > 0)) if (e.deltaX < deltaX) return;
+                    if ((deltaX != undefined) && (deltaX < 0)) if (e.deltaX > deltaX) return;
+                    if ((deltaY != undefined) && (deltaY > 0)) if (e.deltaY < deltaY) return;
+                    if ((deltaY != undefined) && (deltaY < 0)) if (e.deltaY > deltaY) return;
+                    if ((deltaZ != undefined) && (deltaZ > 0)) if (e.deltaZ < deltaZ) return;
+                    if ((deltaZ != undefined) && (deltaZ < 0)) if (e.deltaZ > deltaZ) return;
+
+                    transformCallback(context, exitFrame, enterFrame, options);
+                }
+            };
+        },
+
         'keypress': function(context, transformCallback, exitFrame, enterFrame, options) {
             keyCode = 32;
 
