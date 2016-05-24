@@ -393,7 +393,7 @@ ShuntDiv = (function(){
                     transformCallback(context, exitFrame, enterFrame, options);
             };
 
-            eventName = options.eventName || 'none';
+            eventName = options.eventName || 'shunt';
 
             triggerElem.addEventListener(eventName, triggerCallback);
 
@@ -497,7 +497,7 @@ ShuntDiv = (function(){
         },
 
         'touchSwipe': function(context, transformCallback, exitFrame, enterFrame, options) {
-            swipeDir = options.swipe;
+            swipeDir = options.swipe || 'down';
 
             triggerCallback = ShuntDiv.Triggers._touchswipefactory(swipeDir, context, transformCallback, exitFrame, enterFrame, options);
 
