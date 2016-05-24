@@ -47,8 +47,6 @@ Move your `div`s around.
 
 # The `shuntdiv` Abstractions
 
----
-
 ## The `ShuntDiv` object
 
 A `ShuntDiv` object represents the container `div` (a stage), whose children `div`s (frames) are moving around, and encapsulates the behavior of the transitioning `divs`.
@@ -74,8 +72,6 @@ myShunts = new ShuntDiv(document.getElementById('main-content'), [
     });
 ```
 
----
-
 ## Frames
 
 A frame represents a `div` element that moves around on stage. `shuntdiv.js` is all about attaching and removing these elements from the DOM while possibly animating them.
@@ -95,8 +91,6 @@ e.g;
     ...
 </div>
 ```
-
----
 
 ## Shunts
 
@@ -162,8 +156,6 @@ new ShuntDiv.Introduction('info-1', 'exitAnimateCss', {
 });
 ```
 
----
-
 ## Transforms
 
 A transform represents the visual transformation of the movement between any two frames and is used in the composition of shunt objects.
@@ -196,8 +188,6 @@ Transforms are referenced by name when used as arguments to the constructor of s
     - `animation_time` (optional, default: `500`): Number of milliseconds the CSS animation should take.
     - `animation_function` (optional, default: `"cubic-bezier(.17,.67,.42,.99)"`): The interpolation function used in the CSS animation.
 
----
-
 ## Triggers
 
 A trigger represents some action that may occur on the exiting frame's DOM element or the `document` itself, which triggers a shunt.
@@ -224,4 +214,3 @@ Triggers are referenced by name when used as arguments to the construction of tr
     - `deltaY` (optional): The minimal `deltaY` quantity given by the emitted `wheel` event which is needed to trigger the shunt.
     - `deltaX` (optional): The minimal `deltaX` quantity given by the emitted `wheel` event which is needed to trigger the shunt.
     - `deltaZ` (optional): The minimal `deltaZ` quantity given by the emitted `wheel` event which is needed to trigger the shunt.
----
