@@ -4,6 +4,7 @@ ShuntDiv = (function(){
         this.options = {
             'default': null,
             'saveWithHash': false,
+            'overflow': 'hidden',
         };
 
         if ((options) && (options instanceof Object)) for (option in options) if (options.hasOwnProperty(option))
@@ -15,6 +16,10 @@ ShuntDiv = (function(){
         this._stagedFrame = undefined;
         this._transitionLock = false;
 
+        this._yielding = undefined;
+        this._lastScrollLeft = undefined;
+        this._lastScrollTop = undefined;
+
         for (var i = frameContainer.children.length - 1; i >= 0; i--)
             if ((frame = frameContainer.children[i]).hasAttribute('shunt-frame')) {
                 this._frames.push(frame);
@@ -25,13 +30,14 @@ ShuntDiv = (function(){
                 frame.style.minWidth =     '100%';
                 frame.style.minHeight =    '100%';
                 frame.style['box-sizing'] = 'border-box';
+                frame.style.overflow = this.options['overflow'] || 'hidden';
 
                 frameContainer.removeChild(frame);
             }
 
         // Set container inital CSS
         frameContainer.style.position = frameContainer.style.position || 'relative';
-        frameContainer.style.overflow = this.options['overflow'] || 'hidden';
+        frameContainer.style.overflow = 'hidden';
 
         // Attach default frame
         if (this._frames) {
@@ -428,24 +434,16 @@ ShuntDiv = (function(){
         },
 
         'wheel': function(context, transformCallback, exitFrame, enterFrame, options) {
-            if (options && (clickElemId = options.id))
-                if (qsElem = options.element)
-                  triggerElem = qsElem.querySelector('#' + clickElemId);
-                else
-                  triggerElem = exitFrame.querySelector('#' + clickElemId);
-            else
-                triggerElem = exitFrame;
-
             deltaX = options.deltaX;
             deltaY = options.deltaY;
             deltaZ = options.deltaZ;
 
             triggerCallback = ShuntDiv.Triggers._verticalwheelfactory(deltaX, deltaY, deltaZ, context, transformCallback, exitFrame, enterFrame, options);
 
-            triggerElem.addEventListener('wheel', triggerCallback);
+            exitFrame.addEventListener('wheel', triggerCallback);
 
             return {
-                elem: triggerElem,
+                elem: exitFrame,
                 listener: 'wheel',
                 callback: triggerCallback,
             };
@@ -453,15 +451,18 @@ ShuntDiv = (function(){
 
         '_verticalwheelfactory': function(deltaX, deltaY, deltaZ, context, transformCallback, exitFrame, enterFrame, options) {
             return function(e) {
-                console.log();
-
                 if (context.getStagedFrame() == exitFrame) {
-                    if ((deltaX != undefined) && (deltaX > 0)) if (e.deltaX < deltaX) return;
-                    if ((deltaX != undefined) && (deltaX < 0)) if (e.deltaX > deltaX) return;
-                    if ((deltaY != undefined) && (deltaY > 0)) if (e.deltaY < deltaY) return;
-                    if ((deltaY != undefined) && (deltaY < 0)) if (e.deltaY > deltaY) return;
-                    if ((deltaZ != undefined) && (deltaZ > 0)) if (e.deltaZ < deltaZ) return;
-                    if ((deltaZ != undefined) && (deltaZ < 0)) if (e.deltaZ > deltaZ) return;
+                    atBottom = exitFrame.scrollHeight - exitFrame.offsetHeight - exitFrame.scrollTop < 1;
+                    atTop = exitFrame.scrollTop < 1;
+                    atRight = exitFrame.scrollWidth - exitFrame.offsetWidth - exitFrame.scrollLeft < 1;
+                    atLeft = exitFrame.scrollLeft < 1;
+
+                    if ((deltaX != undefined) && (deltaX > 0) && (e.deltaX < deltaX || !atRight)) return;
+                    if ((deltaX != undefined) && (deltaX < 0) && (e.deltaX > deltaX || !atLeft)) return;
+                    if ((deltaY != undefined) && (deltaY > 0) && (e.deltaY < deltaY || !atBottom)) return;
+                    if ((deltaY != undefined) && (deltaY < 0) && (e.deltaY > deltaY || !atTop)) return;
+                    if ((deltaZ != undefined) && (deltaZ > 0) && (e.deltaZ < deltaZ)) return;
+                    if ((deltaZ != undefined) && (deltaZ < 0) && (e.deltaZ > deltaZ)) return;
 
                     transformCallback(context, exitFrame, enterFrame, options);
                 }

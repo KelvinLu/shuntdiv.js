@@ -208,9 +208,7 @@ Triggers are referenced by name when used as arguments to the construction of tr
     - `key` (optional): An integer key code or character that the event listener will trigger on when the respective key is pressed. Defaults to the space bar.
 - `touchSwipe`: Attaches event listeners to the `ShuntDiv` container element that will trigger a shunt when a swiping action is simulated. Useful for mobile platforms that emit the `touchend` event onto the DOM. Configuration of the following properties is allowed:
     - `swipe` (optional, default: `"down"`): The direction (`up`, `down`, `left`, `right`) which the container will "listen" for.
-- `wheel`: Attaches a scroll wheel `wheel` event listener to an element (the exiting frame, by default) that will trigger the shunt. Configuration of the following properties is allowed:
-    - `element` (optional): The parent DOM element of the DOM element specified by the `id` configuration. Defaults to the exiting frame.
-    - `id` (optional): The `id` attribute of a child element of the `element` DOM element which the event listener is attached to. If it is not specified, the event listener is attached to the exiting frame itself and the `element` configuration is not used.
+- `wheel`: Attaches a scroll wheel `wheel` event listener to the exiting frame that will trigger the shunt. Configuration of the following properties is allowed:
     - `deltaY` (optional): The minimal `deltaY` quantity given by the emitted `wheel` event which is needed to trigger the shunt.
     - `deltaX` (optional): The minimal `deltaX` quantity given by the emitted `wheel` event which is needed to trigger the shunt.
     - `deltaZ` (optional): The minimal `deltaZ` quantity given by the emitted `wheel` event which is needed to trigger the shunt.

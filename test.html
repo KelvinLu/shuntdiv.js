@@ -52,7 +52,7 @@
                 }),
 
                 new ShuntDiv.Transition('intro', 'info-1' , 'zRotate', 'wheel', {
-                    deltaY: 10,
+                    deltaY: 20,
                     rotate: 'down',
                 }),
 
@@ -77,6 +77,7 @@
             ], {
                 default: 'intro',
                 saveWithHash: true,
+                overflow: 'auto',
             });
 
             testShunt.addTransition(new ShuntDiv.Transition('contact', 'info-1' , 'exitAnimateCss', 'keypress', {
