@@ -4,7 +4,7 @@ ShuntDiv = (function(){
         this.options = {
             'default': null,
             'saveWithHash': false,
-            'overflow': 'hidden',
+            'overflow': 'auto',
         };
 
         if ((options) && (options instanceof Object)) for (option in options) if (options.hasOwnProperty(option))
@@ -27,10 +27,10 @@ ShuntDiv = (function(){
                 frame.style.position =  'absolute';
                 frame.style.top =       0;
                 frame.style.left =      0;
-                frame.style.minWidth =     '100%';
-                frame.style.minHeight =    '100%';
+                frame.style.width =     '100%';
+                frame.style.height =    '100%';
                 frame.style['box-sizing'] = 'border-box';
-                frame.style.overflow = this.options['overflow'] || 'hidden';
+                frame.style.overflow = this.options['overflow'] || 'auto';
 
                 frameContainer.removeChild(frame);
             }
@@ -452,10 +452,10 @@ ShuntDiv = (function(){
         '_verticalwheelfactory': function(deltaX, deltaY, deltaZ, context, transformCallback, exitFrame, enterFrame, options) {
             return function(e) {
                 if (context.getStagedFrame() == exitFrame) {
-                    atBottom = exitFrame.scrollHeight - exitFrame.offsetHeight - exitFrame.scrollTop < 1;
-                    atTop = exitFrame.scrollTop < 1;
-                    atRight = exitFrame.scrollWidth - exitFrame.offsetWidth - exitFrame.scrollLeft < 1;
-                    atLeft = exitFrame.scrollLeft < 1;
+                    atBottom = exitFrame.scrollHeight - exitFrame.offsetHeight - exitFrame.scrollTop <= 1;
+                    atTop = exitFrame.scrollTop <= 1;
+                    atRight = exitFrame.scrollWidth - exitFrame.offsetWidth - exitFrame.scrollLeft <= 1;
+                    atLeft = exitFrame.scrollLeft <= 1;
 
                     if ((deltaX != undefined) && (deltaX > 0) && (e.deltaX < deltaX || !atRight)) return;
                     if ((deltaX != undefined) && (deltaX < 0) && (e.deltaX > deltaX || !atLeft)) return;
@@ -514,6 +514,16 @@ ShuntDiv = (function(){
         '_touchswipefactory': function(swipeDir, context, transformCallback, exitFrame, enterFrame, options) {
             return function(e) {
                 if ((e.detail == swipeDir) && (context.getStagedFrame() == exitFrame)) {
+                    atBottom = exitFrame.scrollHeight - exitFrame.offsetHeight - exitFrame.scrollTop <= 1;
+                    atTop = exitFrame.scrollTop <= 1;
+                    atRight = exitFrame.scrollWidth - exitFrame.offsetWidth - exitFrame.scrollLeft <= 1;
+                    atLeft = exitFrame.scrollLeft <= 1;
+
+                    if ((swipeDir == 'up') && !atBottom) return;
+                    if ((swipeDir == 'down') && !atTop) return;
+                    if ((swipeDir == 'left') && !atRight) return;
+                    if ((swipeDir == 'right') && !atLeft) return;
+
                     transformCallback(context, exitFrame, enterFrame, options);
                 }
             };
