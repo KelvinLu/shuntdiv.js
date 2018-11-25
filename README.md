@@ -182,7 +182,7 @@ Transforms are referenced by name when used as arguments to the constructor of s
     - `exit_animation_name` (optional, default: `"fadeIn"`): A name of a CSS keyframe animation in `animate.css`.
     - `exit_animation_time` (optional, default: `500`): Number of milliseconds the CSS animation should take.
     - `exit_animation_function` (optional, default: `"linear"`): The interpolation function used in the CSS animation.
-    - `enter_above` (optional, default: `true`): A boolean indicating if the entering frame should be placed in front (with respect tot he ordering of DOM elements) of the exiting frame.
+    - `enter_above` (optional, default: `true`): A boolean indicating if the entering frame should be placed in front (with respect to the ordering of DOM elements) of the exiting frame.
 - `zRotate`: CSS animations are used to create a visual 3D "rotating" effect. Configuration of the following properties is allowed:
     - `direction` (optional, default: `"up"`): The direction (`up`, `down`, `left`, `right`) of the rolling effect.
     - `animation_time` (optional, default: `500`): Number of milliseconds the CSS animation should take.
